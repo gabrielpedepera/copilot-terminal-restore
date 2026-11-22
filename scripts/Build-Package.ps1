@@ -32,6 +32,8 @@ try {
     foreach ($file in @('README.md', 'LICENSE', 'CHANGELOG.md', 'ACCEPTANCE.md', 'CONTRIBUTING.md', 'STATE.md')) {
         Copy-Item -LiteralPath "$root\$file" -Destination $folder
     }
+    $null = New-Item -ItemType Directory -Path "$folder\docs" -Force
+    Copy-Item -LiteralPath "$root\docs\AGENT-INSTALL.md" -Destination "$folder\docs"
     $notices = [Text.StringBuilder]::new()
     $null = $notices.AppendLine('Third-party dependency notices generated from Cargo.lock and source license files.')
     $resolvedIds = @($metadata.resolve.nodes.id)

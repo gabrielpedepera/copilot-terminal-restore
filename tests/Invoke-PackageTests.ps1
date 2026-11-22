@@ -13,7 +13,7 @@ $actualFiles = @(Get-ChildItem -LiteralPath $package.FullName -Recurse -File)
 if ($actualFiles.Count -ne @($manifest.files).Count + 1) { throw 'Package inventory contains unexpected or missing files.' }
 $required = @('copilot-terminal-restore.exe', 'Install.ps1', 'Uninstall.ps1', 'Test-Environment.ps1',
     'Terminal-Setup.ps1', 'shell\CopilotTerminalRestore.psd1', 'shell\CopilotTerminalRestore.psm1',
-    'README.md', 'LICENSE', 'THIRD-PARTY-NOTICES.txt', 'CHANGELOG.md', 'ACCEPTANCE.md', 'CONTRIBUTING.md', 'STATE.md')
+    'README.md', 'docs\AGENT-INSTALL.md', 'LICENSE', 'THIRD-PARTY-NOTICES.txt', 'CHANGELOG.md', 'ACCEPTANCE.md', 'CONTRIBUTING.md', 'STATE.md')
 if (@(Compare-Object -ReferenceObject $required -DifferenceObject @($manifest.files.file)).Count) {
     throw 'Package does not match the public release contract.'
 }
