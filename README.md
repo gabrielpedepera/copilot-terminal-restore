@@ -2,6 +2,8 @@
 
 Windows x64 helper that resumes enrolled Copilot CLI conversations inside ordinary restored Windows Terminal tabs. No multiplexer, replacement terminal, or background service.
 
+![Two Copilot CLI conversations in separate Windows Terminal tabs resume after the whole window is closed and reopened](docs/media/demo.gif)
+
 **v0.1.0 prerelease.** [Download the Windows x64 ZIP and checksum](https://github.com/gabrielpedepera/copilot-terminal-restore/releases/tag/v0.1.0), then follow the installation steps below. The unsigned package needs no Rust toolchain. A clean second-PC installation and two-conversation restoration smoke test passed; full release acceptance remains incomplete.
 
 Windows Terminal restores the tabs; a Rust helper maps terminal identity to conversation identity; a small PowerShell module resumes the exact conversation and observes deliberate return to the shell.
