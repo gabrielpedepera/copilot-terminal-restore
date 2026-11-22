@@ -20,7 +20,7 @@ Development observations: five active-conversation restores, repeated idle resto
 
 ## Independent candidate smoke test
 
-The maintainer accepted the following limited evidence for an experimental prerelease, not full acceptance or a stable-release claim:
+The maintainer accepted the following limited evidence for this prerelease; full acceptance remains incomplete:
 
 - Exact CI candidate: commit `07a84fc28aecffe00c00768256f528bd612f25ff`, Actions run `45038711757`.
 - ZIP SHA-256: `eff7fe1ba0aa03f0440edd3423a3d83b00df8a7b2c7820017f41973738cf45a0`.

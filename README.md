@@ -1,8 +1,8 @@
 # Copilot Terminal Restore
 
-Experimental Windows x64 helper that resumes enrolled Copilot CLI conversations inside ordinary restored Windows Terminal tabs. No multiplexer, replacement terminal, or background service.
+Windows x64 helper that resumes enrolled Copilot CLI conversations inside ordinary restored Windows Terminal tabs. No multiplexer, replacement terminal, or background service.
 
-**Experimental prerelease, not a stable release.** [Download the Windows x64 ZIP and checksum](https://github.com/gabrielpedepera/copilot-terminal-restore/releases/tag/v0.1.0), then follow the installation steps below. The unsigned package needs no Rust toolchain. A clean second-PC installation and two-conversation restoration smoke test passed; full release acceptance remains incomplete.
+**v0.1.0 prerelease.** [Download the Windows x64 ZIP and checksum](https://github.com/gabrielpedepera/copilot-terminal-restore/releases/tag/v0.1.0), then follow the installation steps below. The unsigned package needs no Rust toolchain. A clean second-PC installation and two-conversation restoration smoke test passed; full release acceptance remains incomplete.
 
 Windows Terminal restores the tabs; a Rust helper maps terminal identity to conversation identity; a small PowerShell module resumes the exact conversation and observes deliberate return to the shell.
 
@@ -37,7 +37,7 @@ Test by closing the **whole window using X**, not each tab individually, and reo
 
 ## 2. Install the ZIP
 
-Obtain the experimental Windows x64 ZIP and its `.sha256` from this project's Releases, or with the GitHub CLI:
+Obtain the Windows x64 ZIP and its `.sha256` from this project's Releases, or with the GitHub CLI:
 
 ```powershell
 gh release download v0.1.0 --repo gabrielpedepera/copilot-terminal-restore --pattern '*-windows-x64.zip*'
@@ -195,4 +195,4 @@ See `ACCEPTANCE.md` for manual real-Terminal/reboot/package checks, `CONTRIBUTIN
 - Repository hooks/policies and conflicting profile initialization may affect behavior; do not claim success without pre-close enrollment.
 - Terminal-Icons 0.11.0 may race when several shells import its shared XML cache. This is a third-party profile issue; this product does not ship or change that module.
 
-This is an independent experimental project, not an official GitHub or Microsoft product.
+This is an independent project, not an official GitHub or Microsoft product.
