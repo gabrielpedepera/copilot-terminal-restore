@@ -5,6 +5,7 @@ use std::{
     os::windows::process::CommandExt,
     path::PathBuf,
     process::{Command, Output, Stdio},
+    sync::atomic::{AtomicU64, Ordering},
     time::{Duration, SystemTime, UNIX_EPOCH},
 };
 
@@ -14,14 +15,30 @@ struct Fixture {
     shell: String,
     record: Value,
 }
+
+fn fixture_directory(timestamp: u128) -> PathBuf {
+    static NEXT_FIXTURE: AtomicU64 = AtomicU64::new(0);
+    loop {
+        let sequence = NEXT_FIXTURE.fetch_add(1, Ordering::Relaxed);
+        let root = std::env::temp_dir().join(format!(
+            "ctr-integration-{}-{timestamp}-{sequence}",
+            std::process::id()
+        ));
+        match fs::create_dir(&root) {
+            Ok(()) => return root,
+            Err(error) if error.kind() == std::io::ErrorKind::AlreadyExists => continue,
+            Err(error) => panic!("Cannot create fixture directory: {error}"),
+        }
+    }
+}
+
 impl Fixture {
     fn new() -> Self {
         let unique = SystemTime::now()
             .duration_since(UNIX_EPOCH)
             .unwrap()
             .as_nanos();
-        let root =
-            std::env::temp_dir().join(format!("ctr-integration-{}-{unique}", std::process::id()));
+        let root = fixture_directory(unique);
         let terminal = "00000000-0000-0000-0000-000000000001".to_string();
         let session = "00000000-0000-0000-0000-000000000002";
         fs::create_dir_all(root.join("sessions")).unwrap();
@@ -126,6 +143,26 @@ impl Drop for Fixture {
     fn drop(&mut self) {
         fs::remove_dir_all(&self.root).unwrap();
     }
+}
+
+#[test]
+fn fixtures_with_the_same_clock_tick_have_independent_state() {
+    let timestamp = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap()
+        .as_nanos();
+    let first = fixture_directory(timestamp);
+    let second = fixture_directory(timestamp);
+    fs::write(first.join("state"), b"first fixture").unwrap();
+    let independent = !second.join("state").exists();
+    fs::remove_dir_all(&first).unwrap();
+    if second != first {
+        fs::remove_dir_all(&second).unwrap();
+    }
+    assert!(
+        independent,
+        "Equal clock ticks must not share fixture state"
+    );
 }
 
 #[test]

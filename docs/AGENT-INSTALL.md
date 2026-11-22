@@ -13,14 +13,14 @@ Instructions for an AI coding agent (for example GitHub Copilot CLI) asked to in
 ## 1. Check prerequisites (read-only)
 
 ```powershell
-[Environment]::Is64BitOperatingSystem
+[Runtime.InteropServices.RuntimeInformation]::OSArchitecture
 $PSVersionTable.PSVersion          # 7.4 or newer
-$env:WT_SESSION                    # non-empty inside Windows Terminal
+[bool]$env:WT_SESSION              # true inside Windows Terminal
 (Get-Command copilot -CommandType Application -All -ErrorAction SilentlyContinue).Source
 Get-Command gh -ErrorAction SilentlyContinue
 ```
 
-Unsupported: Windows PowerShell 5.1, ARM64, WSL, and npm/Node-hosted Copilot CLI. If `copilot` resolves to several paths or to a shim, tell the user. They may need to set a full path in `config.json` after installing (see the README's **Configuration and diagnostics** section).
+Unsupported: Windows PowerShell 5.1, ARM64, WSL, and the npm/Node wrapper launch route. If `copilot` resolves to several paths or to a shim, tell the user and locate the native `copilot.exe`. For a first install, use `-Executable` in step 5; this does not change PATH or uninstall npm. For an existing installation, explain that `config.json` is preserved and needs a separately approved launcher edit if incorrect.
 
 ## 2. Download and verify
 
@@ -60,6 +60,13 @@ Exactly one approach must report the shell's current directory:
 & "$pkg\Install.ps1" -EnableDirectoryReporting    # plain prompt
 ```
 
+If a shim shadows the native CLI, use its full path instead (combine with `-EnableDirectoryReporting` for a plain prompt):
+
+```powershell
+$native = (Get-Command copilot.exe -CommandType Application -ErrorAction Stop).Source
+& "$pkg\Install.ps1" -Executable $native
+```
+
 The installer adds one personal Copilot hook and one marked block in `$PROFILE`, and backs up the profile. Reinstalling updates that block in place. Existing `config.json`, unrelated hooks and unrelated profile content are kept.
 
 ## 6. Verify and hand off
@@ -74,10 +81,11 @@ After installation, run the read-only diagnostic from the extracted package:
 
 Check that previous-session restoration is reported as `recognized`. Otherwise, resolve the reported setup issue before the restore test; for `disabled`, revisit step 3 and rerun the diagnostic after saving. Recognition alone does not prove runtime compatibility or directory reporting.
 
-1. Ask the user to open a **new** Terminal tab. Shells and Copilot sessions started before installation are not tracked, including the one running this agent.
+1. Ask the user to open a **new** Terminal tab. Do not assume shells or conversations started before installation are enrolled; use a fresh shell for acceptance.
 2. In the new tab, `Get-Module CopilotTerminalRestore` should list the module, and the profile should load without errors from this helper.
-3. Ask the user to `cd` to a project folder, start `copilot` and **send a normal message**. Opening a conversation without sending a message does not enroll it (known limitation).
-4. Ask the user to close the **whole window with X** (not each tab) and reopen Terminal. The tab should resume the same conversation in the same folder. Typing `/exit` in Copilot and returning to the prompt deliberately stops restoring that tab.
+3. Ask the user to `cd` to a project folder, start native `copilot` (`copilot.exe` if shims shadow it) and **send a normal message**. Opening a conversation without sending a message does not enroll it (known limitation).
+4. Verify locally that the helper's saved record is `armed` and matches the intended conversation, cwd and live owner before closing. `Get-CtrStatus` reads this tab's record from a shell prompt; for an active CLI inspect helper records without printing their raw contents or altering Copilot files. Do not exit an active conversation just to check status: deliberate return to the prompt disarms it. If a mapping is absent, investigate rather than claiming enrollment.
+5. Ask the user to close the **whole window with X** (not each tab) and reopen Terminal. The tab should resume the same conversation in the same folder. Typing `/exit` in Copilot and returning to the prompt deliberately stops restoring that tab.
 
 Report what was installed, the package version and checksum, the directory-reporting choice, and the remaining manual steps.
 

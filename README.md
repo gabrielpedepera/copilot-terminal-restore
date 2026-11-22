@@ -2,6 +2,8 @@
 
 Experimental Windows x64 helper that resumes enrolled Copilot CLI conversations inside ordinary restored Windows Terminal tabs. No multiplexer, replacement terminal, or background service.
 
+**Experimental prerelease, not a stable release.** [Download the Windows x64 ZIP and checksum](https://github.com/gabrielpedepera/copilot-terminal-restore/releases/tag/v0.1.0), then follow the installation steps below. The unsigned package needs no Rust toolchain. Independent acceptance is still pending; if no release is listed, a candidate is not yet available to install.
+
 Windows Terminal restores the tabs; a Rust helper maps terminal identity to conversation identity; a small PowerShell module resumes the exact conversation and observes deliberate return to the shell.
 
 ## Supported scope
@@ -38,16 +40,19 @@ Test by closing the **whole window using X**, not each tab individually, and reo
 Obtain the experimental Windows x64 ZIP and its `.sha256` from this project's Releases, or with the GitHub CLI:
 
 ```powershell
-gh release download --repo gabrielpedepera/copilot-terminal-restore --pattern '*-windows-x64.zip*'
+gh release download v0.1.0 --repo gabrielpedepera/copilot-terminal-restore --pattern '*-windows-x64.zip*'
 ```
 
-Add a tag (for example `v0.1.0`) if the latest release is a pre-release. To have an AI agent such as Copilot CLI install it for you, point it to [docs/AGENT-INSTALL.md](docs/AGENT-INSTALL.md).
+The explicit tag also selects a prerelease. Private repositories require an authenticated account with access. To have an AI agent such as Copilot CLI install it for you, point it to [docs/AGENT-INSTALL.md](docs/AGENT-INSTALL.md), also included in the ZIP.
 
 Check the downloaded checksum:
 
 ```powershell
-Get-FileHash .\copilot-terminal-restore-v0.1.0-windows-x64.zip -Algorithm SHA256
-Get-Content .\copilot-terminal-restore-v0.1.0-windows-x64.zip.sha256
+$zip = '.\copilot-terminal-restore-v0.1.0-windows-x64.zip'
+$expected = (Get-Content "$zip.sha256" -Raw).Split(' ')[0].Trim()
+if ((Get-FileHash $zip -Algorithm SHA256).Hash.ToLowerInvariant() -ne $expected) {
+    throw 'Checksum mismatch; do not install'
+}
 ```
 
 Extract the ZIP, open PowerShell in the extracted directory, and run:
@@ -58,9 +63,18 @@ Extract the ZIP, open PowerShell in the extracted directory, and run:
 
 This creates one owned personal Copilot hook and appends one marked block to the current user's PowerShell host profile. It preserves unrelated profile content, hooks, and existing launcher configuration, and creates a profile backup. Reinstalling updates the block where it already is.
 
+If `Get-Command copilot -All` shows npm shims or another wrapper ahead of the native Windows executable, select the native launcher during the first install:
+
+```powershell
+$native = (Get-Command copilot.exe -CommandType Application -ErrorAction Stop).Source
+.\Install.ps1 -Executable $native
+```
+
+Use `copilot.exe` for manual launches in that setup. This does not change PATH or uninstall npm; the wrapper route is outside the verified support scope. Reinstalls preserve existing launcher configuration, so inspect `config.json` if already installed. Add `-EnableDirectoryReporting` for a plain prompt as described below.
+
 Do not disable organization policies or broadly change execution policy to install this helper. The binary/scripts are unsigned; review the source and follow your environment's approved way to run downloaded software.
 
-Use a fresh PowerShell tab afterward. In an existing real PowerShell prompt you can run `. $PROFILE`; this does not retrofit tracking into a Copilot process that was already running.
+Use a fresh PowerShell tab afterward. In an existing real PowerShell prompt you can run `. $PROFILE`. Do not assume an already-running Copilot process is enrolled; use the fresh-tab procedure and verify its saved mapping before testing.
 
 For a source checkout, first `cargo build --release --locked`, then `.\scripts\Install.ps1`. Release recipients do not need Cargo.
 
@@ -94,11 +108,11 @@ After installing and configuring directory reporting, run the diagnostic from th
 
 This is a **post-install** check: it requires the installed helper and must not be run before `Install.ps1`. Check that Terminal restoration is reported as `recognized`; if it is `disabled`, revisit step 1, save the setting, and rerun the check. See **Configuration and diagnostics** below for other reported statuses and selecting a settings file. Recognition does not replace the whole-window restore test.
 
-Launch `copilot`, send a normal message, and keep it running. The personal hook records the exact conversation ID plus cwd and process ownership.
+Open a fresh PowerShell tab and check that `Get-Module CopilotTerminalRestore` lists the module without helper startup errors. Launch native `copilot` (or `copilot.exe` when shims shadow it), send a normal message, and keep it running. The personal hook records the exact conversation ID plus cwd and process ownership. A delayed or absent mapping is not proof of enrollment; investigate it before closing the window.
 
 Close/reopen the whole Terminal window. Copilot should resume the same conversation automatically. It does not submit a new message or replay an interrupted tool.
 
-Before a larger test, inspect this tab's saved record with `Get-CtrStatus` from its PowerShell prompt. Other running tabs can be verified by reading helper records, without modifying Copilot's locks/transcripts. Do not exit an active conversation merely to collect status immediately before testing; deliberate shell return disarms it.
+Before a larger test, verify that the saved record is `armed` and maps to the intended conversation, cwd, and live owner. `Get-CtrStatus` reads this tab's record from its PowerShell prompt; active tabs can be checked by reading helper records locally, without modifying Copilot's locks/transcripts. Do not exit an active conversation merely to collect status immediately before testing; deliberate shell return disarms it. Do not post raw records or real IDs/paths publicly.
 
 If you deliberately `/exit` Copilot and leave PowerShell open, the next prompt disarms restoration for that tab. Agent turn completion does not count as CLI exit.
 
