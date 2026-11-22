@@ -1,0 +1,70 @@
+name: Windows validation
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - name: Toolchain
+        run: |
+          rustup toolchain install 1.100.0 --profile minimal --component rustfmt --component clippy
+          rustup override set 1.100.0
+      - name: Rust checks
+        run: |
+          cargo fmt --check
+          if ($LASTEXITCODE) { throw 'Formatting failed' }
+          cargo clippy --locked --all-targets -- -D warnings
+          if ($LASTEXITCODE) { throw 'Clippy failed' }
+          cargo test --locked
+          if ($LASTEXITCODE) { throw 'Tests failed' }
+          cargo build --locked --release
+          if ($LASTEXITCODE) { throw 'Build failed' }
+      - name: Auth-free shell checks
+        run: |
+          $ErrorActionPreference = 'Stop'
+          .\tests\Invoke-InstallationTests.ps1
+          .\tests\Invoke-ShellAdapterTests.ps1
+          .\tests\Invoke-TerminalSetupTests.ps1
+          .\tests\Invoke-DirectoryReportingTests.ps1
+      - name: Package and test extracted ZIP
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $candidate = .\scripts\Build-Package.ps1
+          .\tests\Invoke-PackageTests.ps1 -Archive $candidate.archive
+      - name: PowerShell 7.4 checks
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $runtime = Join-Path $env:RUNNER_TEMP 'pwsh-7.4.22'
+          $zip = "$runtime.zip"
+          Invoke-WebRequest -Uri 'https://github.com/PowerShell/PowerShell/releases/download/v7.4.22/PowerShell-7.4.22-win-x64.zip' -OutFile $zip
+          if ((Get-FileHash -LiteralPath $zip).Hash.ToLowerInvariant() -ne '5f89f51860a1a3b07937945663afd7cbd44387361ff9985f5758939cb9bd6359') {
+            throw 'PowerShell runtime checksum mismatch'
+          }
+          Expand-Archive -LiteralPath $zip -DestinationPath $runtime
+          $env:PATH = "$runtime;$env:PATH"
+          & "$runtime\pwsh.exe" -NoProfile -Command {
+            $ErrorActionPreference = 'Stop'
+            .\tests\Invoke-InstallationTests.ps1
+            .\tests\Invoke-ShellAdapterTests.ps1
+            .\tests\Invoke-TerminalSetupTests.ps1
+            .\tests\Invoke-DirectoryReportingTests.ps1
+            $archives = @(Get-ChildItem -LiteralPath '.\dist' -Filter '*.zip' -File)
+            if ($archives.Count -ne 1) { throw 'Expected one candidate ZIP' }
+            .\tests\Invoke-PackageTests.ps1 -Archive $archives[0].FullName
+          }
+          if ($LASTEXITCODE) { throw 'PowerShell 7.4 validation failed' }
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: windows-x64-candidate
+          path: |
+            dist/*.zip
+            dist/*.sha256
+          if-no-files-found: error

@@ -1,0 +1,17 @@
+name: Bug report
+description: Report a reproducible restore problem without private runtime data.
+body:
+  - type: textarea
+    id: versions
+    attributes:
+      label: Versions
+      description: Windows, Terminal, PowerShell, Copilot, and helper versions.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Reproduction and expected/actual behavior
+      description: Was a normal message sent before closing? Did an exact mapping exist? Redact session IDs, paths, credentials, and logs.
+    validations:
+      required: true
