@@ -2,7 +2,7 @@
 
 Experimental Windows x64 helper that resumes enrolled Copilot CLI conversations inside ordinary restored Windows Terminal tabs. No multiplexer, replacement terminal, or background service.
 
-**Experimental prerelease, not a stable release.** [Download the Windows x64 ZIP and checksum](https://github.com/gabrielpedepera/copilot-terminal-restore/releases/tag/v0.1.0), then follow the installation steps below. The unsigned package needs no Rust toolchain. Independent acceptance is still pending; if no release is listed, a candidate is not yet available to install.
+**Experimental prerelease, not a stable release.** [Download the Windows x64 ZIP and checksum](https://github.com/gabrielpedepera/copilot-terminal-restore/releases/tag/v0.1.0), then follow the installation steps below. The unsigned package needs no Rust toolchain. A clean second-PC installation and two-conversation restoration smoke test passed; full release acceptance remains incomplete. If no release is listed, a candidate is not yet available to install.
 
 Windows Terminal restores the tabs; a Rust helper maps terminal identity to conversation identity; a small PowerShell module resumes the exact conversation and observes deliberate return to the shell.
 
@@ -13,7 +13,7 @@ Windows Terminal restores the tabs; a Rust helper maps terminal identity to conv
 - One Copilot conversation per tab.
 - Plain `copilot` is the default launcher. No CLI wrapper, aliases, font, theme engine, or developer toolchain is required to install a release ZIP.
 
-Locally exercised with Windows Terminal 1.25.3131.0, PowerShell 7.6.10, and Copilot CLI 1.0.114. Auth-free shell/installer checks also passed on PowerShell 7.4.22; 7.4 is the API minimum, not a claim that every earlier patch was tested. Five enrolled conversations, repeated idle restoration, and a real reboot preserved their exact IDs in the development environment. Independent release-package acceptance is still pending.
+Locally exercised with Windows Terminal 1.25.3131.0, PowerShell 7.6.10, and Copilot CLI 1.0.114. Auth-free shell/installer checks also passed on PowerShell 7.4.22; 7.4 is the API minimum, not a claim that every earlier patch was tested. Five enrolled conversations, repeated idle restoration, and a real reboot preserved their exact IDs in the development environment. The exact candidate ZIP also passed a reported clean installation and two-conversation whole-window restore on Windows 10 x64 build 19045, Terminal 1.25.3131.0, PowerShell 7.7.0, and native Copilot CLI 1.0.114. This second-PC smoke test does not establish mixed-tab, repeated idle, or reboot acceptance; see `ACCEPTANCE.md`.
 
 **Enrollment limitation:** submit one normal message after manually opening or resuming a conversation. Running only `/session id` may not fire the start hook and does not enroll it. This includes valuable existing conversations resumed through the picker, not only empty sessions. Once enrolled, automatic restores require no new message.
 

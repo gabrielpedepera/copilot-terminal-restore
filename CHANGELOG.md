@@ -12,4 +12,4 @@
 - Runbook included in the ZIP, tagged downloads, enforced checksum verification, and native launcher/post-install enrollment guidance.
 - Isolated Rust test directories remain independent when parallel fixtures share a clock timestamp.
 
-Known limitation: a manually launched/resumed conversation needs a normal message for enrollment; subsequent automatic idle restores need none. Independent package acceptance and publication approval are still required.
+Known limitation: a manually launched/resumed conversation needs a normal message for enrollment; subsequent automatic idle restores need none. Clean second-PC installation and a two-conversation restore smoke test passed for the exact candidate ZIP. Remaining manual acceptance scenarios are deferred; publication approval is still required.
