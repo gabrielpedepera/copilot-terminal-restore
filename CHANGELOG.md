@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.1.0 candidate (unreleased)
+## 0.1.0 (experimental prerelease)
 
 - Experimental Windows x64 exact-ID recovery in ordinary Windows Terminal tabs.
 - Native lifecycle tracking and immediate ownership registration for idle automatic resumes.
@@ -12,4 +12,4 @@
 - Runbook included in the ZIP, tagged downloads, enforced checksum verification, and native launcher/post-install enrollment guidance.
 - Isolated Rust test directories remain independent when parallel fixtures share a clock timestamp.
 
-Known limitation: a manually launched/resumed conversation needs a normal message for enrollment; subsequent automatic idle restores need none. Clean second-PC installation and a two-conversation restore smoke test passed for the exact candidate ZIP. Remaining manual acceptance scenarios are deferred; publication approval is still required.
+Known limitation: a manually launched/resumed conversation needs a normal message for enrollment; subsequent automatic idle restores need none. Clean second-PC installation and a two-conversation restore smoke test passed for the exact published ZIP. Remaining manual acceptance scenarios are deferred; this is not a stable release.
